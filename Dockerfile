@@ -1,5 +1,5 @@
 # pull official base image
-FROM python:3.9-slim-buster
+FROM tiangolo/uvicorn-gunicorn-fastapi:python3.8
 
 # set working directory
 WORKDIR /usr/src/app
@@ -12,5 +12,6 @@ ENV PYTHONUNBUFFERED 1
 RUN pip install --upgrade pip
 COPY ./requirements.txt .
 RUN pip install -r requirements.txt
+EXPOSE 8000
 # add app
 COPY . .

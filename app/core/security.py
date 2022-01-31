@@ -14,8 +14,6 @@ from functools import wraps
 from fastapi import HTTPException
 pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 
-ALGORITHM = "HS256"
-
 def create_token(database_id, secret, exp):
     now = datetime.utcnow()
     exp = datetime.utcnow() + exp
@@ -38,7 +36,7 @@ async def create_authorisation_token(username):
 
 async def get_jwt_token(record: User, password ):
     actual = hashlib.pbkdf2_hmac(
-        settings.ALGORITHM,
+        settings.ALGORITHM_PASSWORD,
         password.encode('utf-8'),
         record.salt.encode('latin-1'),
         int(record.rounds)
@@ -63,7 +61,7 @@ async def encode_password(password, salt=None):
     if salt is None:
         salt = os.urandom(32)
     rounds = 100000
-    hashed = hashlib.pbkdf2_hmac(settings.ALGORITHM, password.encode('utf-8'),
+    hashed = hashlib.pbkdf2_hmac(settings.ALGORITHM_PASSWORD, password.encode('utf-8'),
                                  salt, rounds)
     return {
         'salt': salt.decode("latin-1"),

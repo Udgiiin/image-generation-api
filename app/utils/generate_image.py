@@ -4,7 +4,6 @@ import requests
 class ApiImage:
 
     def execute(self, path):
-        print(settings.IMAGEAPI + path)
         return requests.get(url=settings.IMAGEAPI + path)
 
     def generate(self, slug):
