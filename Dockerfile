@@ -15,5 +15,3 @@ RUN pip install -r requirements.txt
 EXPOSE 8000
 # add app
 COPY . .
-RUN rm -rf "migrations/versions"
-RUN mkdir "migrations/versions"
