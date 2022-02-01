@@ -64,6 +64,8 @@ def test_get_image_api_without_token():
 def test_get_image_api():
     response = client.get("/api/v1/image/generate/asdfasdfasd", data=user_fake.to_body(), headers=user_fake.to_header())
     assert response.status_code == 200
+    response = client.get("/api/v1/image/generate/asdfasdfasd", data=user_fake.to_body(), headers=user_fake.to_header())
+    assert response.status_code == 200
 
 
 def test_get_image_api_with_fake_token():

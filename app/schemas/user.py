@@ -7,10 +7,6 @@ class Token(BaseModel):
     access_token: str = None
 
 
-class TokenPayload(BaseModel):
-    user_id: Optional[int]
-
-
 class UserBase(BaseModel):
     username: str
 
@@ -29,10 +25,6 @@ class UserOut(UserBase):
 
 class UserInDB(UserBase):
     hashed_password: str
-
-
-class UserUpdate(UserBase):
-    password: Optional[str] = None
 
 
 class UserUpdateDB(UserBase):
