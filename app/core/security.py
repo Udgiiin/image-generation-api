@@ -1,18 +1,13 @@
-import base64
-import hashlib
-import hmac
-import secrets
-import string
-import os
+import bcrypt
 import jwt
 from passlib.context import CryptContext
 from app.models import User
 from app.core.config import settings
 from datetime import datetime, timedelta
-from typing import Any, Callable, Optional
+from typing import Any, Callable
 from functools import wraps
 from fastapi import HTTPException
-pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
+
 
 def create_token(database_id, secret, exp):
     now = datetime.utcnow()
@@ -35,38 +30,26 @@ async def create_authorisation_token(username):
 
 
 async def get_jwt_token(record: User, password ):
-    actual = hashlib.pbkdf2_hmac(
-        settings.ALGORITHM_PASSWORD,
-        password.encode('utf-8'),
-        record.salt.encode('latin-1'),
-        int(record.rounds)
-    )
-    expected = record.hashed_password.encode('latin-1')
-    if hmac.compare_digest(actual, expected):
-        # create access_token
+    if bcrypt.checkpw(password.encode('utf-8'), record.hashed_password.encode('utf-8')):
         access_token = await create_authorisation_token(record.id)
-
         return {
             "access_token": access_token
         }
 
-    return {}
+    raise HTTPException(
+        status_code=406,
+        detail="wrong password"
+    )
 
 
-def decode_jwt_token(token, secret):
-    return jwt.decode(token, secret, algorithms=['HS256'])
+def decode_jwt_token(token):
+    return jwt.decode(token, settings.SECRET, algorithms=['HS256'])
 
 
-async def encode_password(password, salt=None):
-    if salt is None:
-        salt = os.urandom(32)
-    rounds = 100000
-    hashed = hashlib.pbkdf2_hmac(settings.ALGORITHM_PASSWORD, password.encode('utf-8'),
-                                 salt, rounds)
+async def encode_password(password):
+    hashed = bcrypt.hashpw(password.encode('utf-8'), bcrypt.gensalt())
     return {
-        'salt': salt.decode("latin-1"),
-        'rounds': rounds,
-        'hashed': hashed.decode("latin-1"),
+        'hashed': hashed.decode('utf-8'),
     }
 
 
@@ -75,10 +58,10 @@ def auth_required(func: Callable) -> Callable:
     async def wrapper(*args: Any, **kwargs: Any):
         try:
             access_token = kwargs['authorization']
-            decoded = decode_jwt_token(access_token, settings.SECRET)
+            decoded = decode_jwt_token(access_token)
             kwargs['user_id'] = decoded['sub']
             return await func(*args, **kwargs)
-        except (jwt.exceptions.InvalidSignatureError, jwt.exceptions.ExpiredSignatureError) as e:
+        except (jwt.exceptions.InvalidSignatureError, jwt.exceptions.ExpiredSignatureError, jwt.exceptions.DecodeError) as e:
             raise HTTPException(
                 status_code=403,
                 detail=f"{e}",

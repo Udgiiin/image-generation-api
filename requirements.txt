@@ -40,3 +40,4 @@ typing_extensions==4.0.1
 urllib3==1.26.8
 uvicorn==0.17.1
 setuptools
+bcrypt

@@ -13,10 +13,10 @@ async def create_user(user, session: AsyncSession):
     if user_db is not None:
         raise HTTPException(
             status_code=409,
-            detail="The user with this username already exists in the system",
+            detail="username is exists",
         )
     obj_in = UserInDB(
-        **user.dict(), hashed_password=security_data['hashed'], salt=security_data['salt'], rounds=security_data['rounds']
+        **user.dict(), hashed_password=security_data['hashed']
     )
     return await crud_user.create(session, obj_in)
 
@@ -25,7 +25,7 @@ async def auth_user(user, session: AsyncSession):
     user_db = await crud_user.get(session, username=user.username)
     if user_db is None:
         raise HTTPException(
-            status_code=409,
-            detail="username is exists",
+            status_code=404,
+            detail="username is not exists",
         )
     return await get_jwt_token(user_db, user.password)

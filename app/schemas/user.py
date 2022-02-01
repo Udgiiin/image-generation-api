@@ -29,8 +29,6 @@ class UserOut(UserBase):
 
 class UserInDB(UserBase):
     hashed_password: str
-    salt: str
-    rounds: str
 
 
 class UserUpdate(UserBase):
